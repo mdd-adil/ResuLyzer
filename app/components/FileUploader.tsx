@@ -1,6 +1,6 @@
 import {useState, useCallback} from 'react'
 import {useDropzone} from 'react-dropzone'
-import { formatSize } from '/lib/utils'
+import {formatSize} from 'lib/utils';
 interface FileUploaderProps {
     onFileSelect?: (file: File | null) => void;
 }
@@ -12,13 +12,13 @@ const FileUploader = ({ onFileSelect }: FileUploaderProps) => {
         onFileSelect?.(file);
     }, [onFileSelect]);
 
-    const maxFileSize = 20 * 1024 * 1024; // 20MB in bytes
+    const maxFileSize = 20 * 1024 * 1024; 
 
     const {getRootProps, getInputProps, isDragActive, acceptedFiles} = useDropzone({
         onDrop,
         multiple: false,
-        accept: { 'application/pdf': ['.pdf']},
-        maxSize: maxFileSize,
+        accept: {'application/pdf': ['.pdf']},
+        maxSize: 20 * 1024 * 1024, 
     })
 
     const file = acceptedFiles[0] || null;
