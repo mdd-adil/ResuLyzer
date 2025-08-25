@@ -1,4 +1,3 @@
-
 import {type FormEvent, useState} from 'react'
 import Navbar from "~/components/Navbar";
 import FileUploader from "~/components/FileUploader";
@@ -24,8 +23,7 @@ const Upload = () => {
 
         setStatusText('Uploading the file...');
         const uploadedFile = await fs.upload([file]);
-        if(!uploadedFile) {
-            return setStatusText('Error: Failed to upload file');}
+        if(!uploadedFile) return setStatusText('Error: Failed to upload file');
 
         setStatusText('Converting to image...');
         const imageFile = await convertPdfToImage(file);
@@ -50,7 +48,7 @@ const Upload = () => {
 
         const feedback = await ai.feedback(
             uploadedFile.path,
-            prepareInstructions({ jobTitle,jobDescription})
+            prepareInstructions({ jobTitle, jobDescription })
         )
         if (!feedback) return setStatusText('Error: Failed to analyze resume');
 
@@ -82,7 +80,7 @@ const Upload = () => {
 
     return (
         <main className="bg-[url('/images/bg-main.svg')] bg-cover">
-            <Navbar link="/" tittle="Go to Home"/>
+            <Navbar link={"/"} tittle={"Go To Home"}/>
 
             <section className="main-section">
                 <div className="page-heading py-16">
