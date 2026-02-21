@@ -28,9 +28,50 @@ export default function Home() {
 
       const resumes = (await kv.list('resume:*', true)) as KVItem[];
 
-      const parsedResumes = resumes?.map((resume) => (
-          JSON.parse(resume.value) as Resume
-      ))
+      const parsedResumes = resumes?.map((resume) => {
+        try {
+          const parsed = JSON.parse(resume.value) as Resume;
+          console.log('Loaded resume:', parsed);
+          console.log('Feedback type:', typeof parsed.feedback);
+          console.log('Feedback value:', parsed.feedback);
+          
+          // Handle case where feedback might still be a string or null
+          if (typeof parsed.feedback === 'string') {
+            console.warn('Feedback is a string, trying to parse:', parsed.feedback);
+            if (parsed.feedback === '' || parsed.feedback === null) {
+              // Set default feedback structure
+              parsed.feedback = {
+                overallScore: 0,
+                ATS: { score: 0, tips: [] },
+                toneAndStyle: { score: 0, tips: [] },
+                content: { score: 0, tips: [] },
+                structure: { score: 0, tips: [] },
+                skills: { score: 0, tips: [] }
+              };
+            } else {
+              try {
+                parsed.feedback = JSON.parse(parsed.feedback);
+              } catch (e) {
+                console.error('Failed to parse feedback string:', e);
+                parsed.feedback = {
+                  overallScore: 0,
+                  ATS: { score: 0, tips: [] },
+                  toneAndStyle: { score: 0, tips: [] },
+                  content: { score: 0, tips: [] },
+                  structure: { score: 0, tips: [] },
+                  skills: { score: 0, tips: [] }
+                };
+              }
+            }
+          }
+          
+          console.log('Final ATS score:', parsed.feedback?.ATS?.score);
+          return parsed;
+        } catch (error) {
+          console.error('Failed to parse resume:', error);
+          return null;
+        }
+      }).filter(Boolean) as Resume[];
 
       setResumes(parsedResumes || []);
       setLoadingResumes(false);
@@ -60,7 +101,14 @@ export default function Home() {
       {!loadingResumes && resumes.length > 0 && (
         <div className="resumes-section">
           {resumes.map((resume) => (
-              <ResumeCard key={resume.id} resume={resume} />
+              <ResumeCard
+                key={resume.id}
+                resume={resume}
+                onDelete={async (id: string) => {
+                  await kv.delete(`resume:${id}`);
+                  setResumes((prev) => prev.filter((r) => r.id !== id));
+                }}
+              />
           ))}
         </div>
       )}

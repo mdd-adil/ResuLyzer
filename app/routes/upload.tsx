@@ -40,9 +40,10 @@ const Upload = () => {
             resumePath: uploadedFile.path,
             imagePath: uploadedImage.path,
             companyName, jobTitle, jobDescription,
-            feedback: '',
+            feedback: null, // Initialize as null instead of empty string
         }
-        await kv.set(`resume:${uuid}`, JSON.stringify(data));
+        // Don't save the incomplete data first
+        // await kv.set(`resume:${uuid}`, JSON.stringify(data));
 
         setStatusText('Analyzing...');
 
@@ -56,11 +57,22 @@ const Upload = () => {
             ? feedback.message.content
             : feedback.message.content[0].text;
 
-        data.feedback = JSON.parse(feedbackText);
-        await kv.set(`resume:${uuid}`, JSON.stringify(data));
-        setStatusText('Analysis complete, redirecting...');
-        console.log(data);
-        navigate(`/resume/${uuid}`);
+        console.log('Raw AI feedback text:', feedbackText);
+
+        try {
+            const parsedFeedback = JSON.parse(feedbackText);
+            console.log('Parsed feedback object:', parsedFeedback);
+            console.log('ATS Score from AI:', parsedFeedback?.ATS?.score);
+            
+            data.feedback = parsedFeedback;
+            await kv.set(`resume:${uuid}`, JSON.stringify(data));
+            setStatusText('Analysis complete, redirecting...');
+            navigate(`/resume/${uuid}`);
+        } catch (error) {
+            console.error('Failed to parse AI feedback:', error);
+            console.error('AI feedback text was:', feedbackText);
+            setStatusText('Error: Failed to parse AI feedback');
+        }
     }
 
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {

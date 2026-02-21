@@ -20,7 +20,7 @@ const FileUploader = ({ onFileSelect }: FileUploaderProps) => {
         multiple: false,
         accept: { 'application/pdf': ['.pdf']},
         maxSize: maxFileSize,
-    })
+    } as any)
 
     const file = acceptedFiles[0] || null;
 
@@ -29,7 +29,7 @@ const FileUploader = ({ onFileSelect }: FileUploaderProps) => {
     return (
         <div className="w-full gradient-border">
             <div {...getRootProps()}>
-                <input {...getInputProps()} />
+                <input {...getInputProps({})} />
 
                 <div className="space-y-4 cursor-pointer">
                     {file ? (
