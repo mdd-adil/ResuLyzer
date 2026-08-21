@@ -8,7 +8,7 @@ let pdfjsLib: any = null;
 let isLoading = false;
 let loadPromise: Promise<any> | null = null;
 
-async function loadPdfJs(): Promise {
+async function loadPdfJs(): Promise<any> {
 if (pdfjsLib) return pdfjsLib;
 if (loadPromise) return loadPromise;
 // Dynamically import both pdf.js core and worker from the same version
