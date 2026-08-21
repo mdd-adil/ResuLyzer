@@ -47,19 +47,25 @@ const Upload = () => {
 
         setStatusText('Analyzing...');
 
-        const feedback = await ai.feedback(
-            uploadedFile.path,
-            prepareInstructions({ jobTitle, jobDescription })
-        )
-        if (!feedback) return setStatusText('Error: Failed to analyze resume');
-
-        const feedbackText = typeof feedback.message.content === 'string'
-            ? feedback.message.content
-            : feedback.message.content[0].text;
-
-        console.log('Raw AI feedback text:', feedbackText);
-
         try {
+            const feedback = await Promise.race([
+                ai.feedback(
+                    uploadedFile.path,
+                    prepareInstructions({ jobTitle, jobDescription })
+                ),
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('AI request timed out after 60 seconds')), 60000)
+                )
+            ]) as Awaited<ReturnType<typeof ai.feedback>>;
+            
+            if (!feedback) return setStatusText('Error: Failed to analyze resume');
+
+            const feedbackText = typeof feedback.message.content === 'string'
+                ? feedback.message.content
+                : feedback.message.content[0].text;
+
+            console.log('Raw AI feedback text:', feedbackText);
+
             const parsedFeedback = JSON.parse(feedbackText);
             console.log('Parsed feedback object:', parsedFeedback);
             console.log('ATS Score from AI:', parsedFeedback?.ATS?.score);
@@ -69,9 +75,9 @@ const Upload = () => {
             setStatusText('Analysis complete, redirecting...');
             navigate(`/resume/${uuid}`);
         } catch (error) {
-            console.error('Failed to parse AI feedback:', error);
-            console.error('AI feedback text was:', feedbackText);
-            setStatusText('Error: Failed to parse AI feedback');
+            console.error('AI analysis failed:', error);
+            setStatusText(`Error: ${error instanceof Error ? error.message : 'Failed to analyze resume'}`);
+            setIsProcessing(false);
         }
     }
 

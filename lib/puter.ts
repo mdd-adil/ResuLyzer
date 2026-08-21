@@ -334,24 +334,33 @@ export const usePuterStore = create<PuterStore>((set, get) => {
             return;
         }
 
-        return puter.ai.chat(
-            [
-                {
-                    role: "user",
-                    content: [
-                        {
-                            type: "file",
-                            puter_path: path,
-                        },
-                        {
-                            type: "text",
-                            text: message,
-                        },
-                    ],
-                },
-            ],
-            { model: "claude-3-7-sonnet" }
-        ) as Promise<AIResponse | undefined>;
+        console.log('Starting AI chat with path:', path);
+        console.log('Message length:', message.length);
+
+        try {
+            const result = await puter.ai.chat(
+                [
+                    {
+                        role: "user",
+                        content: [
+                            {
+                                type: "file",
+                                puter_path: path,
+                            },
+                            {
+                                type: "text",
+                                text: message,
+                            },
+                        ],
+                    },
+                ]
+            );
+            console.log('AI chat completed:', result);
+            return result as AIResponse | undefined;
+        } catch (err) {
+            console.error('AI chat error:', err);
+            throw err;
+        }
     };
 
     const img2txt = async (image: string | File | Blob, testMode?: boolean) => {
